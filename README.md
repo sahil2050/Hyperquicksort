@@ -2,11 +2,11 @@
 ------------------
 This repo provides an implemenation of hyperquicksort, a parallel sorting algorithm using MPI.
 
-##compilation script##
+compilation script
 ----------------------  
     mpicc -g -Wall -o sort hyperquicksort.c -lm
 
-##execution script##
+execution script
 --------------------
     mpiexec -n num_procs ./sort inputfile outputfile
 Copyright © 2017 [Sahil Aggarwal][me]
