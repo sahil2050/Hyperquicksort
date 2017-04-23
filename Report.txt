@@ -1,0 +1,81 @@
+/****************************COL380/Parallel Programming/Lab3*****************************/
+//************************Implementing Hyperquicksort using MPI**************************//
+
+
+##Parallelization and Load Balancing Strategy##
+Since Hyperquicksort itself is a parallel algorithm, therefore there was no special Parallelization or load balancing strategy.
+
+>read input //process 0
+
+>distribute the input data 
+    MPI_Scatter()
+
+>sort each local array for each process
+    //use stl qsort()
+
+>iterate log p times:
+    >create communicator based on process rank and no of iteration
+        // in ith iteration there will be 2^i groups of processes or communicaors
+        // also compute the local rank of each process
+        // use MPI_Comm_split()
+    >process 0 will broadcast its median
+    >each process will divide local array into low and high partitioned by median
+    >each process in upper half will swap its low list with high list of corresponding lower half
+        // now each process in upper half has elements greater than median
+        // MPI_Send() and MPI_Recv()
+    >merge the two sorted lists
+        // the remaining list and the list recieved from pair process
+
+//now all the elements are sorted    
+// elements in process i are less than elements in process i+1
+
+>collect elements from all processes into process 0 and print to output file
+
+##System Buffer overflow##
+Each process in upper half should send then recv whereas 
+each process in lower half should recv then send because
+for larger inputs system buffer overflows and send call blocks
+till there is a matching recieve. Otherwise program deadlocks.
+openMPI has a system buffer size of 64K.
+
+Note: 
+1. The 'payload vs time' and 'no of nodes vs time' graphs are zipped with submission
+2. The time taken excludes time for reading input and writing to output file.
+
+##Results##
+
+$$ payload vs time $$ (for 32 nodes)
+payload size(power of 2)        time
+10                             0.0017             
+12                             0.0027
+14                             0.0041
+16                             0.0026
+18                             0.0046
+20                             0.0138
+22                             0.0686
+24                             0.3150
+26                             1.3740
+
+$$ no of nodes vs time $$ (for 2^18 elements)
+no of nodes         time
+1                   0.0538
+2                   0.0278
+4                   0.0146
+8                   0.0077
+16                  0.0044
+32                  0.0040
+
+$$ no of nodes vs time $$ (for 2^26 elements)
+no of nodes         time
+1                   19.572
+2                   10.022
+4                   5.0822   
+8                   2.5840
+16                  1.3220
+32                  1.1550
+
+##compilation script##
+mpicc -g -Wall -o sort hyperquicksort.c -lm
+
+##execution script##
+mpiexec -n num_procs ./sort inputfile outputfile
